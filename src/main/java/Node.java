@@ -71,10 +71,12 @@ public class Node {
             }
         }
 
-        // Look for successor and predecessor
+        // Look for successor and predecessor: Not efficient, but works...
+        int nPrimeId = nPrime.id;
+
         nPrime.calculateFingerTable();
         successor = network.network.get(nPrime.fingers.get(nPrime.findFingerWhoContainsN(id)).node).node;
-        while (successor.id <= id && successor.id != 1){
+        while (successor.id <= id && successor.id != nPrimeId){
             System.out.println("Checking node " + successor.id);
             nPrime = successor;
             nPrime.calculateFingerTable();
@@ -84,18 +86,21 @@ public class Node {
         successor.predecessor = this;
         predecessor.successor = this;
 
-        /* TODO: This does not work...
+
+// TODO: Implement simplified algorithm from exercise sheet 4
+        /*
         calculateFingerTableSimple();
 
         for (int i = 0; i < m; i++) {
             int idToLookup = (int) (id - Math.pow(2, (i)));
-            Node p = lookupPredecessor(idToLookup, nPrime);
+            Node p = network.network.get(nPrime.findPredecessor(idToLookup)).node;
             System.out.println(p.id);
             while (p.fingers.get(i).node > id) {
                 p.fingers.get(i).node = id;
                 p = p.predecessor;
             }
         }
+
          */
 
         network.network.get(id).node = this;
@@ -120,9 +125,9 @@ public class Node {
         return -1;
     }
 
-    public Node connectToNode(int n){
+    public Node connectToNode(int n, String message){
         if (this.id == n){
-            System.out.println("Found node " + this.id);
+            System.out.println(this.id + ": Recieved message: " + message);
             return this;
         }
         calculateFingerTable();
@@ -139,7 +144,7 @@ public class Node {
             }
         }
         System.out.println("Successor: " + successorFound.id);
-        if (successorFound.id <= n) return successorFound.connectToNode(n);
+        if (successorFound.id <= n) return successorFound.connectToNode(n, message);
         System.err.println("No node found");
         return null;
     }
@@ -197,33 +202,12 @@ public class Node {
             i += 1;
         }
     }
-
-    public Node lookupPredecessor(int id, Node n){
-        Node predecessor = n.predecessor;
-        while (predecessor.id > id && id != 1){
-            n = predecessor;
-            predecessor = n.predecessor;
-        }
-        return predecessor;
-
-    }
-
-    public Node lookupSuccessor(int id, Node n){
-        Node successor = n.successor;
-        while (successor.id > id && id != 1){
-            n = successor;
-            successor = n.successor;
-        }
-        return successor;
-    }
-
-
     public int closestFingerPrecedingId(int id){
         if (id >= twoPowerM) return -1;
         this.calculateFingerTable();
         ArrayList<Integer> interval = createInterval(this.id+1, id-1, twoPowerM);
         for (int i = m-1; i >= 0; i--){
-            //This also seems to work, but i am not sure if this is correctly implemented
+            //This also seems to work, but I am not sure if this is always correct
             //if (fingers.get(i).node > this.id && fingers.get(i).node < id) return fingers.get(i).node;
             //else if (id < this.id && fingers.get(i).node < id) return fingers.get(i).node;
             if (interval.contains(fingers.get(i).node)) return fingers.get(i).node;
@@ -247,20 +231,13 @@ public class Node {
         return nPrime.successor.id;
     }
 
-    //KISS for intervals. Not efficient but prevents my brain from exploding
+    //KISS for ring intervals. Not efficient but prevents my brain from exploding. ATTENTION: both start and end is inclusive here...
     public ArrayList<Integer> createInterval(int start, int end, int ringSize){
         if (start > ringSize || end > ringSize) return null; //Wrong values
         ArrayList<Integer> interval = new ArrayList<>();
         interval.add(start);
-        if (start < end){
-            for (int i = start+1; i <= end; i++){
-                interval.add(i);
-            }
-        }
-        else if (start > end){
-            for (int i = start+1; i <= end+ringSize; i++){
-                interval.add(i%ringSize);
-            }
+        for (int i = start+1; i%ringSize != end+1; i++){
+            interval.add(i%ringSize);
         }
         return interval;
     }

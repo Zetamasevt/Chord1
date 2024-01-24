@@ -32,7 +32,7 @@ public class Main {
         Node n27 = new Node(27);
         n27.joinNetwork(n1);
 
-        /*
+
         // Test 1: Node positions
         System.out.println(" ");
         System.out.println("Test 1: Node positions");
@@ -52,21 +52,13 @@ public class Main {
         n18.printFingerTable();
 
         // Test 3: 25 sends message to 8
-        System.out.println(n25.connectToNode(8));
-
+        System.out.println(n25.connectToNode(8, "hello world"));
 
         // Test 4: node 22 joins through node 1
         System.out.println(" ");
         System.out.println("Test 4: Finger-tables of 3 and 18");
         Node n22 = new Node(22);
         n22.joinNetwork(n1);
-
-        myNetwork.printChordNetwork();
-
-        System.out.println(n1.lookupPredecessor(4, n1).id);
-
-         */
-
 
         //Test find Predecessor/Successor as implemented in the paper
         System.out.println(n1.findPredecessor(31));
