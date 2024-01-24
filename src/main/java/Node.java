@@ -1,17 +1,15 @@
 import java.util.ArrayList;
 
 public class Node {
-
-
+    // For checking...
     // https://onecompiler.com/javascript/3zzek2bdu
-
 
     public int id;
     public int m = 0;
     private int twoPowerM = 0;
     public ArrayList<Finger> fingers;
-    public Node successor;
-    public Node predecessor;
+    public int successor;
+    public int predecessor;
 
     public void setNetwork(ChordNetwork network) {
         this.network = network;
@@ -29,27 +27,10 @@ public class Node {
         setNetwork(network);
         network.network.get(id).isNode = true;
         network.network.get(id).node = this;
-        successor = this;
-        predecessor = this;
+        successor = this.id;
+        predecessor = this.id;
         calculateFingerTable();
     }
-
-    /*
-    2. To fill the own finger table, the new node simply queries for the ideal adresse the finger pointer
-    should be pointing to (n + 2^(i-1)) modulus 2^m and stores the resulting node addresses.
-    3. To update the finger pointers of other nodes, the corresponding nodes have to be located. The following
-    pseudocode fragment does the trick (remember, m is the number of finger table entries):
-    for i = 1 to m
-     // Find last node p whose i-th finger might be n
-     p = lookup_predecessor(n-2^(i-1)) // ^ is the exponentiation operator
-     // update fingers counter-clockwise as long as necessary
-     while p.getFinger(i) > n
-     // update i-th finger
-     p.setFinger(i, n)
-     p = p.getPredecessor()
-     end while
-    end for
-     */
 
     public void joinNetwork(Node nPrime){
         network = nPrime.network;
@@ -71,45 +52,42 @@ public class Node {
             }
         }
 
-        // Look for successor and predecessor: Not efficient, but works...
-        int nPrimeId = nPrime.id;
+        int nPrimeId = nPrime.id; //Remember nprime for later resetting
 
-        nPrime.calculateFingerTable();
-        successor = network.network.get(nPrime.fingers.get(nPrime.findFingerWhoContainsN(id)).node).node;
-        while (successor.id <= id && successor.id != nPrimeId){
-            System.out.println("Checking node " + successor.id);
-            nPrime = successor;
-            nPrime.calculateFingerTable();
-            successor = network.network.get(nPrime.fingers.get(nPrime.findFingerWhoContainsN(id)).node).node;
-        }
-        predecessor = successor.predecessor;
-        successor.predecessor = this;
-        predecessor.successor = this;
-
-
-// TODO: Implement simplified algorithm from exercise sheet 4
-        /*
+        //Simplified algorithm from ES4
+        //System.out.println("Calculating finger-tables for " + id);
         calculateFingerTableSimple();
-
-        for (int i = 0; i < m; i++) {
-            int idToLookup = (int) (id - Math.pow(2, (i)));
+        for (int i = 1; i <= m; i++) {
+            //System.out.println("Finger: " + i);
+            int idToLookup = (int) (id - Math.pow(2, (i-1)));
+            //System.out.println("Id to look up: " + idToLookup);
             Node p = network.network.get(nPrime.findPredecessor(idToLookup)).node;
-            System.out.println(p.id);
-            while (p.fingers.get(i).node > id) {
-                p.fingers.get(i).node = id;
-                p = p.predecessor;
+            //System.out.println("Predecessor of Id to look up: " + p.id);
+            while (p.fingers.get(i-1).node > id) {
+                //System.out.print(p.fingers.get(i-1).node);
+                //System.out.println(" is bigger than " + id);
+                //System.out.println("Updating finger " + i);
+                p.fingers.get(i-1).node = id;
+                p = network.network.get(p.predecessor).node;
+                //System.out.println("The new predecessor is " + p.id);
             }
         }
 
-         */
+        //Resetting nPrime
+        nPrime = network.network.get(nPrimeId).node;
+        nPrime.calculateFingerTable();
+
+        predecessor = nPrime.findPredecessor(id);
+        successor = network.network.get(predecessor).node.successor;
+        network.network.get(successor).node.predecessor = this.id;
+        network.network.get(predecessor).node.successor = this.id;
 
         network.network.get(id).node = this;
         network.network.get(id).isNode = true;
-        System.out.println("New node registered at identifier " + id);
+        System.out.println("New node registered at identifier " + id + "; Pre: " + predecessor + "; Succ: " + successor);
     }
 
     public int findFingerWhoContainsN(int n){
-        //System.out.println("Looking in " + this.id + " for the finger containing " + n);
         calculateFingerTable();
         int fingerIndex = 0;
         for (Finger f:fingers) {
@@ -125,10 +103,10 @@ public class Node {
         return -1;
     }
 
-    public Node connectToNode(int n, String message){
+    public boolean connectToNode(int n, String message){
         if (this.id == n){
-            System.out.println(this.id + ": Recieved message: " + message);
-            return this;
+            System.out.println(this.id + ": Received message: " + message);
+            return true;
         }
         calculateFingerTable();
         Node successorFound = null;
@@ -143,10 +121,9 @@ public class Node {
                 }
             }
         }
-        System.out.println("Successor: " + successorFound.id);
         if (successorFound.id <= n) return successorFound.connectToNode(n, message);
         System.err.println("No node found");
-        return null;
+        return false;
     }
 
     public void calculateFingerTable() {
@@ -203,7 +180,6 @@ public class Node {
         }
     }
     public int closestFingerPrecedingId(int id){
-        if (id >= twoPowerM) return -1;
         this.calculateFingerTable();
         ArrayList<Integer> interval = createInterval(this.id+1, id-1, twoPowerM);
         for (int i = m-1; i >= 0; i--){
@@ -215,23 +191,24 @@ public class Node {
         return this.id;
     }
 
+
     public int findPredecessor(int id){
-        if (id >= twoPowerM) return -1;
+        id = (twoPowerM + id)%twoPowerM;
         Node nPrime = this;
-        ArrayList<Integer> interval = createInterval(nPrime.id+1, nPrime.successor.id, twoPowerM);
+        ArrayList<Integer> interval = createInterval(nPrime.id+1, nPrime.successor, twoPowerM);
         while (!interval.contains(id)){
             nPrime = network.network.get(nPrime.closestFingerPrecedingId(id)).node;
-            interval = createInterval(nPrime.id+1, nPrime.successor.id, twoPowerM);
+            interval = createInterval(nPrime.id+1, nPrime.successor, twoPowerM);
         }
         return nPrime.id;
     }
 
     public int findSuccessor(int id){
         Node nPrime = network.network.get(findPredecessor(id)).node;
-        return nPrime.successor.id;
+        return nPrime.successor;
     }
 
-    //KISS for ring intervals. Not efficient but prevents my brain from exploding. ATTENTION: both start and end is inclusive here...
+    //KISS for ring intervals. Not very efficient but prevents brains from exploding. ATTENTION: both start and end is inclusive here...
     public ArrayList<Integer> createInterval(int start, int end, int ringSize){
         if (start > ringSize || end > ringSize) return null; //Wrong values
         ArrayList<Integer> interval = new ArrayList<>();
@@ -240,5 +217,27 @@ public class Node {
             interval.add(i%ringSize);
         }
         return interval;
+    }
+
+    public void periodicalUpdate(){
+        //Update fingers...
+        calculateFingerTable();
+        //Check successor...
+        checkSuccessor();
+    }
+
+    public boolean checkSuccessor(){
+        if (!connectToNode(successor, "Test")){
+            System.out.println("Node " + successor + " can not be reached!");
+            for (int i = 1; i<m; i++){
+                if (fingers.get(i).node != successor && network.network.get(fingers.get(i).node).node.predecessor == successor){
+                    successor = fingers.get(i).node;
+                    network.network.get(fingers.get(i).node).node.predecessor = this.id;
+                    System.out.println("New successor: " + successor);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

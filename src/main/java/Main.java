@@ -52,16 +52,23 @@ public class Main {
         n18.printFingerTable();
 
         // Test 3: 25 sends message to 8
+        System.out.println(" ");
+        System.out.println("Test 3: 25 sends message to 8");
         System.out.println(n25.connectToNode(8, "hello world"));
 
         // Test 4: node 22 joins through node 1
         System.out.println(" ");
-        System.out.println("Test 4: Finger-tables of 3 and 18");
+        System.out.println("Test 4: 22 joins through node 1");
         Node n22 = new Node(22);
         n22.joinNetwork(n1);
 
-        //Test find Predecessor/Successor as implemented in the paper
-        System.out.println(n1.findPredecessor(31));
-        System.out.println(n1.findSuccessor(31));
+        // Test 5: node 15 fails
+        System.out.println(" ");
+        System.out.println("Test 15 fails...");
+        myNetwork.network.get(15).isNode = false;
+        myNetwork.network.get(15).node = null;
+        n13.periodicalUpdate();
+
+        myNetwork.printChordNetwork();
     }
 }

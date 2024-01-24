@@ -19,7 +19,7 @@ public class ChordNetwork {
         for (Identifier i:network){
             //System.out.println(i.key + ": ");
             if (i.isNode){
-                System.out.println("Pre: " + i.node.predecessor.id + "; Succ: " + i.node.successor.id);
+                System.out.println("Pre: " + i.node.predecessor + "; Succ: " + i.node.successor);
                 i.node.calculateFingerTable();
                 i.node.printFingerTableFull();
             }
