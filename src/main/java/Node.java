@@ -6,7 +6,7 @@ public class Node {
     // https://onecompiler.com/javascript/3zzek2bdu
 
 
-    public int id = 0;
+    public int id;
     public int m = 0;
     private int twoPowerM = 0;
     public ArrayList<Finger> fingers;
@@ -47,8 +47,8 @@ public class Node {
      // update i-th finger
      p.setFinger(i, n)
      p = p.getPredecessor()
-     endwhile
-    endfor
+     end while
+    end for
      */
 
     public void joinNetwork(Node nPrime){
@@ -150,7 +150,7 @@ public class Node {
             Finger finger = new Finger();
             fingers.add(finger);
             finger.start = (int) ((id + Math.pow(2,(k))) % twoPowerM);
-            if (k>0 && k<m){
+            if (k>0){
                 fingers.get(k-1).end = finger.start;
             }
             for (int i = 0; i< twoPowerM; i++){
@@ -158,7 +158,7 @@ public class Node {
                 if (network.network.get(idToCheck).isNode) {
                     finger.node = idToCheck;
                     break;
-                };
+                }
             }
         }
         fingers.get(m-1).end = id;
@@ -171,7 +171,7 @@ public class Node {
             fingers.add(finger);
             finger.start = (int) ((id + Math.pow(2,(k))) % twoPowerM);
             finger.node = finger.start;
-            if (k>0 && k<m){
+            if (k>0){
                 fingers.get(k-1).end = finger.start;
             }
         }
@@ -187,7 +187,7 @@ public class Node {
     }
 
     public void printFingerTableFull(){
-        System.out.println("Fingertable of node " + id);
+        System.out.println("Finger-table of node " + id);
         int i = 1;
         for (Finger f:fingers){
             System.out.print("Finger " + i + ": ");
@@ -205,5 +205,63 @@ public class Node {
             predecessor = n.predecessor;
         }
         return predecessor;
+
+    }
+
+    public Node lookupSuccessor(int id, Node n){
+        Node successor = n.successor;
+        while (successor.id > id && id != 1){
+            n = successor;
+            successor = n.successor;
+        }
+        return successor;
+    }
+
+
+    public int closestFingerPrecedingId(int id){
+        if (id >= twoPowerM) return -1;
+        this.calculateFingerTable();
+        ArrayList<Integer> interval = createInterval(this.id+1, id-1, twoPowerM);
+        for (int i = m-1; i >= 0; i--){
+            //This also seems to work, but i am not sure if this is correctly implemented
+            //if (fingers.get(i).node > this.id && fingers.get(i).node < id) return fingers.get(i).node;
+            //else if (id < this.id && fingers.get(i).node < id) return fingers.get(i).node;
+            if (interval.contains(fingers.get(i).node)) return fingers.get(i).node;
+        }
+        return this.id;
+    }
+
+    public int findPredecessor(int id){
+        if (id >= twoPowerM) return -1;
+        Node nPrime = this;
+        ArrayList<Integer> interval = createInterval(nPrime.id+1, nPrime.successor.id, twoPowerM);
+        while (!interval.contains(id)){
+            nPrime = network.network.get(nPrime.closestFingerPrecedingId(id)).node;
+            interval = createInterval(nPrime.id+1, nPrime.successor.id, twoPowerM);
+        }
+        return nPrime.id;
+    }
+
+    public int findSuccessor(int id){
+        Node nPrime = network.network.get(findPredecessor(id)).node;
+        return nPrime.successor.id;
+    }
+
+    //KISS for intervals. Not efficient but prevents my brain from exploding
+    public ArrayList<Integer> createInterval(int start, int end, int ringSize){
+        if (start > ringSize || end > ringSize) return null; //Wrong values
+        ArrayList<Integer> interval = new ArrayList<>();
+        interval.add(start);
+        if (start < end){
+            for (int i = start+1; i <= end; i++){
+                interval.add(i);
+            }
+        }
+        else if (start > end){
+            for (int i = start+1; i <= end+ringSize; i++){
+                interval.add(i%ringSize);
+            }
+        }
+        return interval;
     }
 }

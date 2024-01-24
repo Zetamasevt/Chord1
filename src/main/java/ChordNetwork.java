@@ -5,14 +5,6 @@ public class ChordNetwork {
     public ArrayList<Identifier> network;
     public int m;
 
-    public String networkString(){
-        String output = "";
-        for (Identifier id :network){
-            output += id.key + " ";
-        }
-        return output;
-    }
-
     public ChordNetwork(int m){
         this.m = m;
         network = new ArrayList<>();
@@ -20,7 +12,7 @@ public class ChordNetwork {
             Identifier identifier = new Identifier(i);
             network.add(identifier);
         }
-        System.out.println("New Chord Network created. " + networkString());
+        System.out.println("New Chord Network created. ");
     }
 
     public void printChordNetwork(){
