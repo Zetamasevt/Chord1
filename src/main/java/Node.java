@@ -56,8 +56,6 @@ public class Node {
             }
         }
 
-        int nPrimeId = nPrime.id; //Remember nprime for later resetting
-
         //Simplified algorithm from ES4
         //System.out.println("Calculating finger-tables for " + id);
         calculateFingerTableSimple();
@@ -77,8 +75,6 @@ public class Node {
             }
         }
 
-        //Resetting nPrime
-        nPrime = network.network.get(nPrimeId).node;
         nPrime.calculateFingerTable();
 
         predecessor = nPrime.findPredecessor(id);
