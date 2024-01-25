@@ -15,10 +15,10 @@ public class Main {
         n7.joinNetwork(n1);
 
         Node n8 = new Node(8);
-        n8.joinNetwork(n1);
+        n8.joinNetwork(n3);
 
         Node n13 = new Node(13);
-        n13.joinNetwork(n1);
+        n13.joinNetwork(n3);
 
         Node n15 = new Node(15);
         n15.joinNetwork(n1);
@@ -27,10 +27,10 @@ public class Main {
         n18.joinNetwork(n1);
 
         Node n25 = new Node(25);
-        n25.joinNetwork(n1);
+        n25.joinNetwork(n7);
 
         Node n27 = new Node(27);
-        n27.joinNetwork(n1);
+        n27.joinNetwork(n13);
 
 
         // Test 1: Node positions
@@ -69,6 +69,27 @@ public class Main {
         myNetwork.network.get(15).node = null;
         n13.periodicalUpdate();
 
-        myNetwork.printChordNetwork();
+        //myNetwork.printChordNetwork();
+
+        // Test 6: DHT Test
+        System.out.println(" ");
+        System.out.println("Test 6: DHT Tests");
+        // We add a few strings
+        System.out.println("Test 6.1: Adding...");
+        n3.add("Hello World");
+        n3.add("Hello World 2");
+        n3.add("Hello World 3");
+        // We try to find one of the added strings
+        System.out.println(" ");
+        System.out.println("Test 6.2: Getting...");
+        System.out.println(n3.hashValue("Hello World"));
+        System.out.println(n3.get(28));
+        System.out.println(n3.get(5));
+        // Now we want to remove a key
+        System.out.println(" ");
+        System.out.println("Test 6.3: Removing...");
+        System.out.println(n1.values());
+        n3.remove(28);
+        System.out.println(n1.values());
     }
 }

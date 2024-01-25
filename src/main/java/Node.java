@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 public class Node {
     // For checking...
@@ -10,6 +12,8 @@ public class Node {
     public ArrayList<Finger> fingers;
     public int successor;
     public int predecessor;
+
+    private HashMap<Integer, String> hashMap = new HashMap<>();
 
     public void setNetwork(ChordNetwork network) {
         this.network = network;
@@ -239,5 +243,56 @@ public class Node {
             }
         }
         return false;
+    }
+
+
+    //DHT-Logic: add, get and remove
+    public int hashValue(String string){
+        int hash = Math.abs((string.hashCode())%twoPowerM);
+        return hash;
+    }
+
+    public int add(String string){
+        System.out.println("We want to store: " + string);
+        int hash = hashValue(string);
+        System.out.println("The key is: " + hash);
+        Node nResp = network.network.get(findPredecessor(hash)).node;
+        //System.out.println("We find the predecessor: " + nResp.id);
+        nResp = network.network.get(nResp.successor).node;
+        //System.out.println("We find the successor of that: " + nResp.id);
+        nResp.store(hash, string);
+        return hash;
+    }
+
+    public void store(int key, String value){
+        hashMap.put(key, value);
+        System.out.println(this.id + " has stored " + value + " with key " + key);
+    }
+
+    public String get(int key){
+        System.out.println("We look for the value of: " + key + " in node " + this.id);
+        Node nResp = network.network.get(findPredecessor(key)).node;
+        nResp = network.network.get(nResp.successor).node;
+        if (this == nResp) {
+            //Todo: implement check and error message if key is not stored
+            return hashMap.get(key);
+        }
+        else return nResp.get(key);
+    }
+
+    public void remove(int key){
+        System.out.println("We look for the key " + key + " to remove in node " + this.id);
+        Node nResp = network.network.get(findPredecessor(key)).node;
+        nResp = network.network.get(nResp.successor).node;
+        if (this == nResp) {
+            //Todo: implement check and error message if key is not stored
+            hashMap.remove(key);
+            System.out.println("The key " + key + " has succesfully been removed in node " + this.id);
+        }
+        else nResp.remove(key);
+    }
+
+    public Collection<String> values(){
+        return hashMap.values();
     }
 }
