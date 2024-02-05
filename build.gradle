@@ -1,9 +1,12 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'org.example'
 version '1.0-SNAPSHOT'
+
+mainClassName = 'ChordNodeApp'
 
 repositories {
     mavenCentral()
@@ -36,7 +39,7 @@ jar {
     manifest {
         attributes(
                 'Class-Path': configurations.compileClasspath.collect { it.getName() }.join(' '),
-                'Main-Class': 'mci.rest.ChordNodeApp'
+                'Main-Class': 'ChordNodeApp'
         )
     }
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }

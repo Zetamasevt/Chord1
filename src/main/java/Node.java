@@ -193,7 +193,7 @@ public class Node {
 
 
     public int findPredecessor(int id){
-        id = (twoPowerM + id)%twoPowerM;
+        id = (twoPowerM + id)%twoPowerM; // That is needed because simple algorithm can result in negative values (going counterclockwise in the ring)
         Node nPrime = this;
         ArrayList<Integer> interval = createInterval(nPrime.id+1, nPrime.successor, twoPowerM);
         while (!interval.contains(id)){
